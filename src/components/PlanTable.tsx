@@ -24,7 +24,8 @@ export default function PlanTable({ subjects, tasksOf, dates, todayStr, isDone, 
       if (!wide) return
       const todayHead = container.querySelector<HTMLElement>('thead th.is-today')
       const corner = container.querySelector<HTMLElement>('thead th.plan-corner')
-      if (todayHead && corner) container.scrollLeft = Math.max(0, todayHead.offsetLeft - corner.offsetWidth - 8)
+      // 오늘 열의 왼쪽이 고정된 과목 열 바로 오른쪽에 오도록 (앞 요일 칸이 살짝 보이지 않게)
+      if (todayHead && corner) container.scrollLeft = Math.max(0, todayHead.offsetLeft - corner.offsetWidth)
     }
     update()
     const observer = new ResizeObserver(update)
