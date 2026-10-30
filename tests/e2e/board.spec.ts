@@ -77,3 +77,49 @@ test('과목과 학습 내용 등록, 요일 체크, 지난주 놓침 표시, �
   await expect(board.getByRole('rowheader', { name: '연산 10분' })).toBeVisible()
   await expectNoHorizontalOverflow(page)
 })
+
+test('계획표 보기: 과목 줄과 칸 안의 학습 내용, 체크, 보기 방식 기억', async ({ page }, testInfo) => {
+  const viewPicker = page.getByRole('radiogroup', { name: '보기 방식' })
+  const planTable = page.locator('.plan-table')
+  const summaryDone = page.locator('.week-summary strong')
+
+  await addChildren(page, ['첫째'])
+  await addSubject(page, { name: '국어', tasks: [{ name: '받아쓰기' }, { name: '독서 20분', days: ['토', '일'] }] })
+  await addSubject(page, { name: '수학', color: '초록', tasks: [{ name: '연산', days: ['토', '일'] }] })
+  await page.goto('/')
+
+  // 기본은 체크표. 계획표로 바꾸면 과목이 줄이 되고 칸 안에 그날 학습 내용이 보임
+  await expect(viewPicker.getByRole('radio', { name: '체크표' })).toBeChecked()
+  await expect(page.locator('.check-table')).toBeVisible()
+  await viewPicker.getByRole('radio', { name: '계획표' }).check()
+  await expect(planTable).toBeVisible()
+  await expect(page.locator('.check-table')).toHaveCount(0)
+  await expect(planTable.getByRole('link', { name: '국어 과목 설정' })).toBeVisible()
+  await expect(planTable.getByRole('link', { name: '수학 과목 설정' })).toBeVisible()
+  // 칸 안의 학습 내용: 받아쓰기 평일 5 + 독서 매일 7 + 연산 매일 7 = 19
+  await expect(page.locator('.plan-item')).toHaveCount(19)
+  await expect(page.locator('.plan-item.is-planned')).toHaveCount(19)
+  // 표는 넓어도 화면(문서) 자체는 넓어지지 않음 (좁은 화면은 표 안에서 옆으로 밂)
+  await expectNoHorizontalOverflow(page)
+  await page.screenshot({ path: testInfo.outputPath('1-plan.png') })
+
+  // 오늘 칸의 학습 내용을 누르면 체크되고 이름에 줄이 그어짐
+  const todayItem = page.getByRole('button', { name: /^연산 .* 오늘 미완료$/ })
+  await todayItem.click()
+  const checked = page.getByRole('button', { name: /^연산 .* 오늘 완료$/ })
+  await expect(checked).toHaveAttribute('aria-pressed', 'true')
+  await expect(checked).toHaveClass(/is-done/)
+  await expect(summaryDone).toHaveText('1')
+  await page.screenshot({ path: testInfo.outputPath('2-plan-checked.png') })
+
+  // 새로고침해도 계획표 보기가 유지되고 체크도 남아 있음
+  await page.reload()
+  await expect(viewPicker.getByRole('radio', { name: '계획표' })).toBeChecked()
+  await expect(page.getByRole('button', { name: /^연산 .* 오늘 완료$/ })).toBeVisible()
+
+  // 체크표로 돌아가도 같은 체크가 보임
+  await viewPicker.getByRole('radio', { name: '체크표' }).check()
+  await expect(page.locator('.check-table')).toBeVisible()
+  await expect(page.getByRole('button', { name: /^연산 .* 오늘 완료$/ })).toHaveAttribute('aria-pressed', 'true')
+  await expectNoHorizontalOverflow(page)
+})

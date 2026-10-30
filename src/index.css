@@ -1073,6 +1073,206 @@ fieldset.field > * + * {
   margin-top: -0.25rem;
 }
 
+/* ===== 보기 방식 고르기 (체크표 | 계획표) ===== */
+.segmented {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+}
+
+.segment {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.segment input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.segment > span {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: 2.5rem;
+  padding: 0 0.875rem;
+  color: var(--color-muted);
+  font-size: 0.9375rem;
+  text-align: center;
+  white-space: nowrap;
+  border-radius: 0.5rem;
+}
+
+.segment > input:checked + span {
+  color: var(--color-text);
+  font-weight: 600;
+  background: var(--color-surface);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+}
+
+.segment > input:focus-visible + span {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+/* ===== 계획표 (과목 줄, 칸 안에 그날 학습 내용) ===== */
+/* 칸이 넓어야 해서 표에 최소 너비를 두고, 좁은 화면에서는 옆으로 밀어서 봅니다. 과목 열은 왼쪽에 붙어 있습니다. */
+.plan-wrap {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.plan-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.plan-table {
+  min-width: 41.5rem;
+}
+
+.plan-table .col-label {
+  width: 6.5rem;
+}
+
+/* 옆으로 미는 표라서 요일 줄은 위에 붙지 않습니다. 대신 왼쪽 열이 옆으로 밀어도 붙어 있습니다. */
+.plan-table.board-table .board-head th {
+  top: auto;
+}
+
+.plan-table .plan-corner,
+.plan-table .plan-subject,
+.plan-table .plan-foot-label {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--color-surface);
+}
+
+.plan-table .plan-corner {
+  z-index: 3;
+}
+
+/* 과목 칸: 과목 색을 옅게 깐 바탕(밀어도 뒤가 비치지 않게 흰색 위에 얹음), 왼쪽 띠 */
+.plan-table .plan-subject {
+  padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+  background: linear-gradient(var(--chip-bg), var(--chip-bg)) var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  border-left: 3px solid var(--chip-solid);
+}
+
+.plan-subject .subject-link {
+  max-width: 100%;
+  font-size: 0.9375rem;
+}
+
+.plan-subject-sub {
+  display: block;
+  margin-top: 0.125rem;
+  color: var(--chip-fg);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.plan-cell {
+  min-height: 3.5rem;
+  padding: 0.375rem 0.25rem;
+  vertical-align: top;
+  border-top: 1px solid var(--color-border);
+}
+
+.plan-row td + td {
+  border-left: 1px solid var(--color-border);
+}
+
+.plan-items {
+  display: grid;
+  gap: 0.125rem;
+}
+
+/* 칸 안의 학습 내용 하나: 작은 체크 네모와 이름. 누르면 체크 */
+.plan-item {
+  display: flex;
+  gap: 0.375rem;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 1.875rem;
+  padding: 0.25rem 0.25rem;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.plan-item .check-box {
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.0625rem;
+  border-radius: 0.3125rem;
+}
+
+.plan-item .check-box::before {
+  width: 0.25rem;
+  height: 0.25rem;
+}
+
+.plan-item.is-planned .check-box {
+  background: var(--color-surface);
+  border-color: var(--chip-outline);
+}
+
+.plan-item.is-missed .check-box {
+  background: #fff1f2;
+  border-color: #fecdd3;
+}
+
+.plan-item.is-done .check-box {
+  background: var(--chip-solid);
+  border-color: var(--chip-solid);
+}
+
+.plan-item.is-done .plan-item-name {
+  color: var(--color-muted);
+  text-decoration: line-through;
+}
+
+.plan-item-name {
+  min-width: 0;
+}
+
+.plan-item:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -1px;
+}
+
+@media (hover: hover) {
+  .plan-item:hover {
+    background: var(--chip-bg);
+  }
+}
+
+.plan-hint {
+  font-size: 0.8125rem;
+}
+
 /* ===== 가로 화면 (PC, 휴대폰 가로): 왼쪽 메뉴 ===== */
 /*
  * 세로 화면(휴대폰)은 아래쪽 탭 메뉴, 가로 화면은 왼쪽 메뉴입니다.
@@ -1208,6 +1408,18 @@ fieldset.field > * + * {
     width: 14rem;
   }
 
+  .plan-table .col-label {
+    width: 9rem;
+  }
+
+  .plan-item {
+    font-size: 0.875rem;
+  }
+
+  .plan-cell {
+    padding: 0.5rem 0.375rem;
+  }
+
   .task-row th,
   .task-row td {
     height: 3rem;
@@ -1259,6 +1471,19 @@ fieldset.field > * + * {
 
   .board-head th {
     position: static;
+  }
+
+  /* 계획표는 옆으로 밀지 않고 종이 너비에 맞춥니다. */
+  .plan-scroll {
+    overflow: visible;
+  }
+
+  .plan-table {
+    min-width: 0;
+  }
+
+  .plan-hint {
+    display: none;
   }
 
   /* 체크 표시와 과목 색이 인쇄에서도 보이게 */
