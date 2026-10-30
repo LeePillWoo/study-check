@@ -1,0 +1,1271 @@
+/* ===== 색상과 기본값 ===== */
+/*
+ * 학원노트(academy-note)와 같은 디자인입니다. 색, 글자 크기, 메뉴 배치를 그대로 씁니다.
+ * 기기나 브라우저가 어두운 모드여도 항상 밝은 화면으로 보여줍니다.
+ * 주 색상: 남색(인디고). 바탕은 옅은 회청색, 카드는 흰색에 옅은 그림자
+ */
+:root {
+  --color-primary: #4f46e5;
+  --color-on-primary: #ffffff;
+  --color-primary-soft: #eef0ff;
+  --color-primary-strong: #4338ca;
+  --color-danger: #dc2626;
+  --color-bg: #f5f6fa;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f8f9fc;
+  --color-text: #1e2235;
+  --color-muted: #6b7084;
+  --color-border: #e7e9f0;
+  --color-sunday: #e5484d;
+  --color-saturday: #3e63dd;
+  --shadow-card: 0 1px 2px rgb(30 34 53 / 0.04), 0 2px 8px rgb(30 34 53 / 0.04);
+  --nav-height: 4rem;
+  --radius: 1rem;
+
+  /* 기본 글자를 브라우저 기본(16px)보다 조금 크게(17px). rem 단위라 화면 전체가 함께 커집니다. */
+  font-size: 106.25%;
+  color-scheme: only light;
+  font-family: system-ui, -apple-system, 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-tap-highlight-color: transparent;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* 글자 크기는 rem으로 지정합니다. 브라우저에서 글자 크기를 키우면 화면 전체가 함께 커집니다. */
+body {
+  margin: 0;
+  min-width: 20rem;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+/* 화면 읽기 프로그램에만 읽히는 글자 */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 0;
+  clip: rect(0 0 0 0);
+}
+
+/* ===== 기본 배치: 휴대폰 세로 (아래쪽 탭 메뉴) ===== */
+/* 100dvh: 주소창이 숨거나 나타나도 실제 보이는 높이에 맞춥니다. 지원하지 않는 브라우저는 100vh를 씁니다. */
+.shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.nav {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  display: flex;
+  padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+}
+
+.nav-brand {
+  display: none;
+}
+
+/* 로고: 남색 둥근 네모 안에 체크 표시 */
+.logo {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  border-radius: 0.625rem;
+  box-shadow: 0 2px 6px rgb(79 70 229 / 0.35);
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  min-height: var(--nav-height);
+  padding: 0.375rem 0;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+
+/* 아이콘 뒤의 둥근 바탕 (고른 메뉴만 색이 찹니다) */
+.nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 2rem;
+  border-radius: 999px;
+}
+
+.nav-item.active {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.nav-item.active .nav-icon {
+  background: var(--color-primary-soft);
+}
+
+.nav-item:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .nav-item:not(.active):hover {
+    color: var(--color-text);
+  }
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: calc(3.25rem + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) calc(1rem + env(safe-area-inset-right)) 0 calc(1rem + env(safe-area-inset-left));
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.topbar-brand {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text);
+  font-size: 1.0625rem;
+  font-weight: 800;
+}
+
+/* 아래쪽 탭 메뉴에 내용이 가려지지 않도록 아래 여백을 메뉴 높이만큼 둡니다. */
+.content {
+  padding: 1rem calc(1rem + env(safe-area-inset-right)) calc(var(--nav-height) + env(safe-area-inset-bottom) + 1rem)
+    calc(1rem + env(safe-area-inset-left));
+}
+
+/* ===== 아이 선택 (위쪽 막대) ===== */
+/* 아이가 많아 칸이 모자라면 옆으로 밀어서 봅니다. */
+.chips {
+  display: flex;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.5rem 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 2.5rem;
+  padding: 0 0.875rem;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  white-space: nowrap;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.chip[aria-pressed='true'] {
+  color: var(--color-primary);
+  font-weight: 600;
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+}
+
+.dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+}
+
+/* ===== 화면 제목 ===== */
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 1rem;
+  min-height: 2.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.page-heading {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.page-subtitle {
+  margin-top: 0.125rem;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.page-actions {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.back-btn {
+  margin-left: -0.625rem;
+}
+
+/* 설정이나 입력 화면처럼 넓을 필요가 없는 화면 */
+.narrow {
+  max-width: 40rem;
+}
+
+/* ===== 카드 ===== */
+.card {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.125rem;
+}
+
+.card > .btn {
+  justify-self: start;
+  margin-top: 0.5rem;
+}
+
+.muted {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.hint {
+  margin-top: 0.75rem;
+}
+
+/*
+ * 한 줄로 쌓는 칸들은 열 너비를 minmax(0, 1fr)로 둡니다.
+ * 그냥 두면 안의 입력칸이 최소 너비를 고집해서 카드가 화면보다 넓어지고,
+ * 휴대폰 브라우저가 화면 전체를 축소해서 보여줍니다.
+ */
+.card,
+.form,
+.form-stack,
+.field,
+.task-editor {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ===== 단추 ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: 0.625rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.btn:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.btn-primary {
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+}
+
+.btn-secondary {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.btn-danger {
+  color: var(--color-danger);
+  background: transparent;
+  border-color: var(--color-danger);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-small {
+  justify-self: start;
+  min-height: 2.5rem;
+  padding: 0 0.875rem;
+  font-size: 0.9375rem;
+}
+
+.icon-btn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  color: var(--color-text);
+  background: transparent;
+  border: 0;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.icon-btn:disabled {
+  color: var(--color-border);
+  cursor: default;
+}
+
+@media (hover: hover) {
+  .icon-btn:not(:disabled):hover,
+  .list-link:hover,
+  .list-main:hover {
+    background: var(--color-primary-soft);
+  }
+}
+
+.btn:focus-visible,
+.icon-btn:focus-visible,
+.chip:focus-visible,
+.list-link:focus-visible,
+.list-main:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ===== 목록 ===== */
+.list {
+  margin: 0 0 1rem;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+
+.list > li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.5rem;
+  padding: 0 0.5rem 0 1rem;
+}
+
+.list-row.is-disabled {
+  color: var(--color-muted);
+  padding-right: 1rem;
+}
+
+.list-link,
+.list-main {
+  color: inherit;
+  text-decoration: none;
+}
+
+.list-link {
+  padding-top: 0.625rem;
+  padding-right: 0.75rem;
+  padding-bottom: 0.625rem;
+}
+
+.list-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.75rem;
+  align-self: stretch;
+  min-width: 0;
+  margin-left: -1rem;
+  padding: 0.625rem 0.5rem 0.625rem 1rem;
+}
+
+.list-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.list-main svg,
+.list-link svg {
+  flex-shrink: 0;
+  color: var(--color-muted);
+}
+
+.row-actions {
+  display: flex;
+}
+
+.list-title,
+.list-sub {
+  display: block;
+}
+
+.list-sub {
+  margin-top: 0.125rem;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+}
+
+/* ===== 입력 ===== */
+.form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.form > .card {
+  margin-bottom: 0;
+}
+
+.form-section {
+  gap: 1rem;
+}
+
+.section-title {
+  font-size: 1.0625rem;
+}
+
+.form-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* fieldset 안의 legend는 grid 배치를 따르지 않아서 아래 여백을 따로 줍니다. */
+fieldset.field {
+  display: block;
+}
+
+fieldset.field > legend {
+  margin-bottom: 0.5rem;
+}
+
+fieldset.field > * + * {
+  margin-top: 0.5rem;
+}
+
+.field-label {
+  padding: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+/* 글자 크기 1rem 이상: 휴대폰에서 입력창을 누를 때 화면이 확대되지 않게 합니다. */
+.input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 0.875rem;
+  color: var(--color-text);
+  font-size: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.625rem;
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+  outline: 1px solid var(--color-primary);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.field-error {
+  color: var(--color-danger);
+  font-size: 0.875rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.form-actions .btn {
+  flex: 1;
+}
+
+/* 긴 입력 화면: 저장 단추가 늘 보이도록 아래에 붙여 둡니다. */
+.sticky-actions {
+  position: sticky;
+  bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
+  z-index: 4;
+  margin: 0 -1rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+}
+
+.delete-btn {
+  margin-top: 1rem;
+}
+
+/* ===== 색 고르기 ===== */
+.color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.swatch {
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: 0;
+  background-color: var(--swatch);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 1.375rem;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* 고른 색: 바깥 테두리와 체크 표시 */
+.swatch:checked {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E");
+  box-shadow: 0 0 0 3px var(--color-surface), 0 0 0 5px var(--swatch);
+}
+
+.swatch:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: 6px;
+}
+
+/* ===== 요일 단추 (계획 요일 고르기) ===== */
+.weekday-toggles {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.375rem;
+}
+
+.weekday-toggle {
+  min-height: 2.75rem;
+  padding: 0;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* 일요일은 빨강, 토요일은 파랑 (한국 달력 관례) */
+.wd-0 {
+  color: var(--color-sunday);
+}
+
+.wd-6 {
+  color: var(--color-saturday);
+}
+
+.weekday-toggle[aria-pressed='true'] {
+  color: var(--color-on-primary);
+  font-weight: 600;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.weekday-toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ===== 학습 내용 편집 줄 (과목 화면) ===== */
+.task-editor {
+  display: grid;
+  gap: 0.625rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+}
+
+.task-editor-head {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+.task-editor-head .input {
+  flex: 1;
+  min-width: 0;
+  margin-right: 0.25rem;
+}
+
+/* 좁은 화면에서 입력칸 자리를 넓히려고 아이콘 단추를 조금 좁게 */
+.task-editor-head .icon-btn {
+  width: 2.25rem;
+}
+
+/* ===== 상태 표시, 진행 막대 ===== */
+.badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  border-radius: 999px;
+}
+
+.progress {
+  display: block;
+  height: 0.375rem;
+  overflow: hidden;
+  background: var(--color-bg);
+  border-radius: 999px;
+}
+
+.progress > span {
+  display: block;
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 999px;
+  transition: width 0.2s;
+}
+
+/* ===== 불러오는 중, 오류 화면 ===== */
+.status-screen {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1rem;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 1.5rem;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+/* ===== 주간 체크 보드 ===== */
+.board-card {
+  gap: 0.75rem;
+}
+
+/* 위쪽 줄: 왼쪽 [‹ 10월 26일 ~ 11월 1일 ›], 오른쪽 [이번 주] 표시나 [이번 주로] 단추 (좁으면 아래로) */
+.board-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.week-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.week-nav strong {
+  font-size: 1.0625rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.week-badge {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.today-btn {
+  flex-shrink: 0;
+  border-radius: 0.625rem;
+}
+
+/* 이번 주 전체 진행: 완료 수와 막대 */
+.week-summary {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.week-summary-text {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  font-size: 0.9375rem;
+}
+
+.week-summary-text strong {
+  font-size: 1.25rem;
+}
+
+.board-empty {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.5rem 0;
+}
+
+/*
+ * 표: 왼쪽 열은 과목·학습 내용, 나머지 7열은 월~일.
+ * table-layout: fixed 로 열 너비를 고정해 내용이 길어도 화면보다 넓어지지 않습니다.
+ */
+.board-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.board-table .col-label {
+  width: 5.5rem;
+}
+
+.board-table th,
+.board-table td {
+  padding: 0;
+  vertical-align: middle;
+}
+
+/* 요일 줄: 스크롤해도 위쪽 막대 아래에 붙어 따라옵니다. (--topbar-height 는 AppShell에서 넣음) */
+.board-head th {
+  position: sticky;
+  top: var(--topbar-height, 0px);
+  z-index: 1;
+  height: 3rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.day-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+}
+
+.day-name {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.wd-0 .day-name {
+  color: var(--color-sunday);
+}
+
+.wd-6 .day-name {
+  color: var(--color-saturday);
+}
+
+.day-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.25rem;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border-radius: 999px;
+}
+
+/* 오늘: 날짜를 남색 동그라미로, 그 열은 옅은 남색 바탕 */
+.is-today .day-num {
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+}
+
+.board-table td.is-today {
+  background: rgb(79 70 229 / 0.06);
+}
+
+/* 과목 줄: 과목 색을 옅게 깐 띠. 왼쪽 띠는 진한 과목 색 (색 값은 colors.ts softColorVars) */
+.subject-row th {
+  padding: 0.25rem 0.5rem 0.25rem 0.5rem;
+  text-align: left;
+  background: var(--chip-bg);
+  border-top: 1px solid var(--color-border);
+  border-left: 3px solid var(--chip-solid);
+}
+
+.subject-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+}
+
+/* 과목 이름 (누르면 과목 설정 화면) */
+.subject-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 0;
+  max-width: 100%;
+  margin-left: -0.375rem;
+  padding: 0.25rem 0.25rem 0.25rem 0.375rem;
+  color: var(--chip-fg);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 0.5rem;
+}
+
+.subject-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.subject-link svg {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+@media (hover: hover) {
+  .subject-link:hover {
+    background: var(--chip-border);
+  }
+}
+
+.subject-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+/* 과목별 진행: 오른쪽에 3/10 과 짧은 막대 (막대 색은 과목 색) */
+.subject-progress {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  color: var(--chip-fg);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.subject-progress .progress {
+  width: 3.5rem;
+  background: rgb(255 255 255 / 0.7);
+}
+
+.subject-progress .progress > span {
+  background: var(--chip-solid);
+}
+
+/* 학습 내용 줄 */
+.task-row th,
+.task-row td {
+  height: 2.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.task-row th {
+  text-align: left;
+}
+
+/* 이름은 두 줄까지만 보이고 넘치면 자릅니다. */
+.task-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  padding-right: 0.5rem;
+  overflow: hidden;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.empty-row th {
+  padding: 0.625rem 0.5rem;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  text-align: left;
+  border-top: 1px solid var(--color-border);
+}
+
+/*
+ * 체크 칸: 단추는 칸 전체(누르기 쉽게), 보이는 네모는 가운데 1.75rem.
+ * - 계획한 요일: 과목 색 테두리의 빈 네모
+ * - 계획하지 않은 요일: 옅은 점
+ * - 체크함: 과목 색으로 채우고 흰 체크 표시
+ * - 계획했는데 지난 날: 옅은 분홍 (놓친 날)
+ */
+.check-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 2.75rem;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.check-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  color: #ffffff;
+  border: 2px solid transparent;
+  border-radius: 0.5rem;
+  transition: transform 0.1s, background-color 0.15s, border-color 0.15s;
+}
+
+.check-box::before {
+  content: '';
+  display: none;
+  width: 0.375rem;
+  height: 0.375rem;
+  background: var(--color-border);
+  border-radius: 50%;
+}
+
+.check-cell:not(.is-planned):not(.is-done) .check-box::before {
+  display: block;
+}
+
+.check-cell.is-planned .check-box {
+  background: var(--color-surface);
+  border-color: var(--chip-outline);
+}
+
+.check-cell.is-missed .check-box {
+  background: #fff1f2;
+  border-color: #fecdd3;
+}
+
+.check-cell.is-done .check-box {
+  background: var(--chip-solid);
+  border-color: var(--chip-solid);
+}
+
+.check-cell:active .check-box {
+  transform: scale(0.9);
+}
+
+.check-cell:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  border-radius: 0.5rem;
+}
+
+@media (hover: hover) {
+  .check-cell:not(.is-done):hover .check-box {
+    border-color: var(--chip-solid);
+  }
+}
+
+/* 아래 줄: 요일마다 완료/계획 수 */
+.board-foot th,
+.board-foot td {
+  height: 2rem;
+  color: var(--color-muted);
+  font-size: 0.6875rem;
+  text-align: center;
+  border-top: 1px solid var(--color-border);
+}
+
+.board-foot th {
+  font-weight: 500;
+  text-align: left;
+}
+
+.board-foot td.is-today {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.board-hint {
+  margin-top: -0.25rem;
+}
+
+/* ===== 가로 화면 (PC, 휴대폰 가로): 왼쪽 메뉴 ===== */
+/*
+ * 세로 화면(휴대폰)은 아래쪽 탭 메뉴, 가로 화면은 왼쪽 메뉴입니다.
+ * 위쪽 막대는 아이 선택이 있을 때만 보입니다.
+ */
+@media (orientation: landscape) and (min-width: 600px) {
+  .shell {
+    display: flex;
+  }
+
+  .nav {
+    position: sticky;
+    top: 0;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    flex-direction: column;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.25rem;
+    width: calc(5.25rem + env(safe-area-inset-left));
+    height: 100vh;
+    height: 100dvh;
+    padding: calc(1rem + env(safe-area-inset-top)) 0 calc(0.75rem + env(safe-area-inset-bottom)) env(safe-area-inset-left);
+    overflow-y: auto;
+    border-top: 0;
+    border-right: 1px solid var(--color-border);
+  }
+
+  .nav-brand {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .nav-item {
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 3.75rem;
+    font-size: 0.6875rem;
+  }
+
+  .nav-icon {
+    width: 2.75rem;
+    height: 2.25rem;
+    border-radius: 0.75rem;
+  }
+
+  .main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .topbar {
+    min-height: 0;
+    padding: env(safe-area-inset-top) calc(1.5rem + env(safe-area-inset-right)) 0 1.5rem;
+  }
+
+  .topbar:not(.has-switcher),
+  .topbar-brand {
+    display: none;
+  }
+
+  .content {
+    padding: calc(1.5rem + env(safe-area-inset-top)) calc(1.5rem + env(safe-area-inset-right))
+      calc(1.5rem + env(safe-area-inset-bottom)) 1.5rem;
+  }
+
+  .topbar.has-switcher + .content {
+    padding-top: 1.5rem;
+  }
+
+  .sticky-actions {
+    bottom: env(safe-area-inset-bottom);
+    margin: 0 -1.5rem;
+    padding: 0.75rem 1.5rem;
+  }
+}
+
+/* 넓은 화면(태블릿 세로 포함): 왼쪽 열을 넓혀 이름이 더 보이게 */
+@media (min-width: 600px) {
+  .board-table .col-label {
+    width: 11rem;
+  }
+
+  .task-name {
+    font-size: 0.875rem;
+  }
+
+  .check-box {
+    width: 1.875rem;
+    height: 1.875rem;
+  }
+
+  .board-foot th,
+  .board-foot td {
+    font-size: 0.75rem;
+  }
+}
+
+/* 휴대폰 가로처럼 높이가 낮은 화면: 고정된 막대를 풀어 본문 공간을 넓힙니다. */
+@media (max-height: 500px) {
+  .topbar,
+  .sticky-actions {
+    position: static;
+  }
+
+  .board-head th {
+    top: 0;
+  }
+}
+
+/* ===== PC (가로 화면, 1024px 이상): 본문 여백을 넓게 ===== */
+@media (orientation: landscape) and (min-width: 1024px) {
+  .topbar {
+    padding: 0 2.5rem;
+  }
+
+  .content,
+  .topbar.has-switcher + .content {
+    max-width: 76rem;
+    padding: 2rem 2.5rem;
+  }
+
+  .sticky-actions {
+    margin: 0;
+    padding: 0.75rem 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .board-table .col-label {
+    width: 14rem;
+  }
+
+  .task-row th,
+  .task-row td {
+    height: 3rem;
+  }
+}
+
+/* 좁은 휴대폰에서 아이 선택이 있으면 위쪽 막대에 로고만 (이름은 숨김) */
+@media (max-width: 419px) {
+  .topbar.has-switcher .brand-text {
+    display: none;
+  }
+}
+
+/* ===== 인쇄 (기본 바탕만) ===== */
+/*
+ * 인쇄 기능은 아직 따로 만들지 않았습니다. 브라우저 인쇄로 보드만 나오도록 메뉴와 단추를 숨기는 정도입니다.
+ * 자세한 인쇄 방식(빈 체크표, 아이별 한 장 등)은 나중에 정합니다.
+ */
+@media print {
+  :root {
+    font-size: 100%;
+    background: #ffffff;
+  }
+
+  .nav,
+  .topbar,
+  .page-actions,
+  .week-nav .icon-btn,
+  .today-btn,
+  .add-subject,
+  .board-hint,
+  .subject-link svg {
+    display: none !important;
+  }
+
+  .shell {
+    display: block;
+  }
+
+  .content {
+    max-width: none;
+    padding: 0;
+  }
+
+  .card {
+    break-inside: avoid;
+    box-shadow: none;
+  }
+
+  .board-head th {
+    position: static;
+  }
+
+  /* 체크 표시와 과목 색이 인쇄에서도 보이게 */
+  .check-box,
+  .subject-row th,
+  .day-num,
+  .progress > span {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
