@@ -1073,7 +1073,14 @@ fieldset.field > * + * {
   margin-top: -0.25rem;
 }
 
-/* ===== 보기 방식 고르기 (체크표 | 계획표) ===== */
+/* 제목 오른쪽: [계획표 | 체크표] 와 [인쇄] */
+.board-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ===== 보기 방식 고르기 (계획표 | 체크표) ===== */
 .segmented {
   display: flex;
   gap: 0.25rem;
@@ -1142,7 +1149,7 @@ fieldset.field > * + * {
 }
 
 .plan-table .col-label {
-  width: 6.5rem;
+  width: 5.25rem;
 }
 
 /* 옆으로 미는 표라서 요일 줄은 위에 붙지 않습니다. 대신 왼쪽 열이 옆으로 밀어도 붙어 있습니다. */
@@ -1409,7 +1416,7 @@ fieldset.field > * + * {
   }
 
   .plan-table .col-label {
-    width: 9rem;
+    width: 6rem;
   }
 
   .plan-item {
@@ -1433,65 +1440,193 @@ fieldset.field > * + * {
   }
 }
 
-/* ===== 인쇄 (기본 바탕만) ===== */
+/* ===== 인쇄: 보고 있는 주간표를 A4 가로 한 장에 ===== */
 /*
- * 인쇄 기능은 아직 따로 만들지 않았습니다. 브라우저 인쇄로 보드만 나오도록 메뉴와 단추를 숨기는 정도입니다.
- * 자세한 인쇄 방식(빈 체크표, 아이별 한 장 등)은 나중에 정합니다.
+ * 학원노트의 시간표 인쇄와 같은 방식입니다. 화면(.shell)은 인쇄에서 빼고,
+ * 평소에는 숨겨 둔 인쇄용 표(.print-sheet, BoardPrintSheet.tsx)만 보여줍니다.
  */
+.print-sheet {
+  display: none;
+}
+
 @media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm 12mm;
+  }
+
   :root {
-    font-size: 100%;
+    font-size: 11pt;
     background: #ffffff;
   }
 
-  .nav,
-  .topbar,
-  .page-actions,
-  .week-nav .icon-btn,
-  .today-btn,
-  .add-subject,
-  .board-hint,
-  .subject-link svg {
+  .shell,
+  dialog {
     display: none !important;
   }
 
-  .shell {
+  .print-sheet {
     display: block;
+    color: #111111;
   }
 
-  .content {
-    max-width: none;
-    padding: 0;
+  .print-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4mm;
+    margin-bottom: 3mm;
+    padding-bottom: 2mm;
+    border-bottom: 0.6mm solid #111111;
   }
 
-  .card {
+  .print-head h1 {
+    margin: 0;
+    font-size: 16pt;
+  }
+
+  .print-head p {
+    margin: 0;
+    color: #444444;
+    font-size: 10pt;
+  }
+
+  .print-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+  }
+
+  .print-table th,
+  .print-table td {
+    padding: 1.5mm;
+    vertical-align: top;
+    border: 0.25mm solid #999999;
+  }
+
+  .print-table tr {
     break-inside: avoid;
-    box-shadow: none;
   }
 
-  .board-head th {
-    position: static;
-  }
-
-  /* 계획표는 옆으로 밀지 않고 종이 너비에 맞춥니다. */
-  .plan-scroll {
-    overflow: visible;
-  }
-
-  .plan-table {
-    min-width: 0;
-  }
-
-  .plan-hint {
-    display: none;
-  }
-
-  /* 체크 표시와 과목 색이 인쇄에서도 보이게 */
-  .check-box,
-  .subject-row th,
-  .day-num,
-  .progress > span {
+  .print-table thead th {
+    padding: 1mm;
+    color: #111111;
+    font-size: 10pt;
+    font-weight: 700;
+    text-align: center;
+    background: #f1f2f6;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
+  }
+
+  .print-table thead th.wd-0 {
+    color: #c0262d;
+  }
+
+  .print-table thead th.wd-6 {
+    color: #2c4fc9;
+  }
+
+  .print-day-date {
+    display: block;
+    color: #555555;
+    font-size: 8pt;
+    font-weight: 400;
+  }
+
+  .print-plan .print-col-label {
+    width: 24mm;
+  }
+
+  .print-check .print-col-label {
+    width: 48mm;
+  }
+
+  /* 과목: 과목 색 왼쪽 띠와 옅은 바탕 (색은 --c) */
+  .print-subject,
+  .print-band th {
+    font-weight: 700;
+    text-align: left;
+    background: color-mix(in srgb, var(--c) 12%, #ffffff);
+    border-left: 1.2mm solid var(--c);
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* 계획표: 칸 안에 그날 학습 내용. 손으로 적을 여백이 있도록 칸을 조금 높게 */
+  .print-plan td {
+    height: 16mm;
+  }
+
+  .print-item {
+    display: flex;
+    gap: 1.2mm;
+    align-items: flex-start;
+    line-height: 1.3;
+  }
+
+  .print-item + .print-item {
+    margin-top: 1mm;
+  }
+
+  .print-box {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 3.8mm;
+    height: 3.8mm;
+    margin-top: 0.4mm;
+    color: #ffffff;
+    background: #ffffff;
+    border: 0.3mm solid #333333;
+    border-radius: 0.8mm;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .print-box.is-done {
+    background: var(--c);
+    border-color: var(--c);
+  }
+
+  .print-box svg {
+    width: 3mm;
+    height: 3mm;
+  }
+
+  /* 체크표: 학습 내용 줄마다 네모 7개. 계획 없는 요일은 작은 점 */
+  .print-check .print-task {
+    font-weight: 400;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .print-check td {
+    height: 8mm;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .print-check .print-box {
+    width: 4.5mm;
+    height: 4.5mm;
+    margin: 0;
+  }
+
+  .print-dot {
+    display: inline-block;
+    width: 1.2mm;
+    height: 1.2mm;
+    background: #bbbbbb;
+    border-radius: 50%;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .print-empty {
+    margin-top: 4mm;
+    color: #444444;
   }
 }

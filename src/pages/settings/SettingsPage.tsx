@@ -3,8 +3,8 @@ import { ChevronRightIcon } from '../../components/icons'
 import PageHeader from '../../components/PageHeader'
 import { useChildren } from '../../data/children'
 
-// 아직 만들지 않은 설정. 만들면 링크로 바꿉니다.
-const UPCOMING = ['인쇄', '백업과 복원']
+// 아직 만들지 않은 설정. 만들면 링크로 바꿉니다. (인쇄는 홈 화면 제목 오른쪽 단추로 합니다.)
+const UPCOMING = ['백업과 복원']
 
 export default function SettingsPage() {
   const { children } = useChildren()

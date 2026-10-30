@@ -1,8 +1,9 @@
 import { expect, test } from '@playwright/test'
 import { addChildren, addSubject, expectNoHorizontalOverflow } from './helpers'
 
-test('과목과 학습 내용 등록, 요일 체크, 지난주 놓침 표시, 아이별 분리', async ({ page }, testInfo) => {
+test('체크표: 과목과 학습 내용 등록, 요일 체크, 지난주 놓침 표시, 아이별 분리', async ({ page }, testInfo) => {
   const board = page.getByRole('table')
+  const viewPicker = page.getByRole('radiogroup', { name: '보기 방식' })
   const weekBadge = page.locator('.week-badge')
   const summaryDone = page.locator('.week-summary strong')
 
@@ -16,8 +17,12 @@ test('과목과 학습 내용 등록, 요일 체크, 지난주 놓침 표시, �
   await expect(page.getByRole('link', { name: '수학 학습 내용 2개' })).toBeVisible()
   await expectNoHorizontalOverflow(page)
 
-  // 보드: 요일 줄, 과목 띠, 학습 내용 줄
+  // 기본은 계획표. 이 테스트는 체크표를 봅니다.
   await page.goto('/')
+  await viewPicker.getByRole('radio', { name: '체크표' }).check()
+  await expect(page.locator('.check-table')).toBeVisible()
+
+  // 보드: 요일 줄, 과목 띠, 학습 내용 줄
   await expect(weekBadge).toHaveText('이번 주')
   await expect(page.getByRole('link', { name: '수학 과목 설정' })).toBeVisible()
   await expect(board.getByRole('rowheader', { name: '문제집 2쪽' })).toBeVisible()
@@ -36,8 +41,9 @@ test('과목과 학습 내용 등록, 요일 체크, 지난주 놓침 표시, �
   await expect(summaryDone).toHaveText('1')
   await page.screenshot({ path: testInfo.outputPath('2-board-checked.png') })
 
-  // 새로고침해도 유지되고, 다시 누르면 취소
+  // 새로고침해도 체크와 보기 방식(체크표)이 유지되고, 다시 누르면 취소
   await page.reload()
+  await expect(page.locator('.check-table')).toBeVisible()
   await expect(checkedToday).toBeVisible()
   await checkedToday.click()
   await expect(summaryDone).toHaveText('0')
@@ -78,7 +84,7 @@ test('과목과 학습 내용 등록, 요일 체크, 지난주 놓침 표시, �
   await expectNoHorizontalOverflow(page)
 })
 
-test('계획표 보기: 과목 줄과 칸 안의 학습 내용, 체크, 보기 방식 기억', async ({ page }, testInfo) => {
+test('계획표(기본): 과목 줄과 칸 안의 학습 내용, 체크, 보기 방식 기억, 인쇄용 표', async ({ page }, testInfo) => {
   const viewPicker = page.getByRole('radiogroup', { name: '보기 방식' })
   const planTable = page.locator('.plan-table')
   const summaryDone = page.locator('.week-summary strong')
@@ -88,10 +94,10 @@ test('계획표 보기: 과목 줄과 칸 안의 학습 내용, 체크, 보기 �
   await addSubject(page, { name: '수학', color: '초록', tasks: [{ name: '연산', days: ['토', '일'] }] })
   await page.goto('/')
 
-  // 기본은 체크표. 계획표로 바꾸면 과목이 줄이 되고 칸 안에 그날 학습 내용이 보임
-  await expect(viewPicker.getByRole('radio', { name: '체크표' })).toBeChecked()
-  await expect(page.locator('.check-table')).toBeVisible()
-  await viewPicker.getByRole('radio', { name: '계획표' }).check()
+  // 기본은 계획표: 과목이 줄이 되고 칸 안에 그날 학습 내용이 보임. 단추 순서는 [계획표, 체크표]
+  await expect(viewPicker.getByRole('radio')).toHaveCount(2)
+  await expect(viewPicker.getByRole('radio').first()).toHaveAccessibleName('계획표')
+  await expect(viewPicker.getByRole('radio', { name: '계획표' })).toBeChecked()
   await expect(planTable).toBeVisible()
   await expect(page.locator('.check-table')).toHaveCount(0)
   await expect(planTable.getByRole('link', { name: '국어 과목 설정' })).toBeVisible()
@@ -104,22 +110,47 @@ test('계획표 보기: 과목 줄과 칸 안의 학습 내용, 체크, 보기 �
   await page.screenshot({ path: testInfo.outputPath('1-plan.png') })
 
   // 오늘 칸의 학습 내용을 누르면 체크되고 이름에 줄이 그어짐
-  const todayItem = page.getByRole('button', { name: /^연산 .* 오늘 미완료$/ })
-  await todayItem.click()
+  await page.getByRole('button', { name: /^연산 .* 오늘 미완료$/ }).click()
   const checked = page.getByRole('button', { name: /^연산 .* 오늘 완료$/ })
   await expect(checked).toHaveAttribute('aria-pressed', 'true')
   await expect(checked).toHaveClass(/is-done/)
   await expect(summaryDone).toHaveText('1')
   await page.screenshot({ path: testInfo.outputPath('2-plan-checked.png') })
 
-  // 새로고침해도 계획표 보기가 유지되고 체크도 남아 있음
-  await page.reload()
-  await expect(viewPicker.getByRole('radio', { name: '계획표' })).toBeChecked()
-  await expect(page.getByRole('button', { name: /^연산 .* 오늘 완료$/ })).toBeVisible()
+  // 인쇄: 인쇄 단추가 있고, 인쇄 매체에서는 화면 대신 인쇄용 표(제목, 아이, 과목, 학습 내용)가 보임
+  await expect(page.getByRole('button', { name: '인쇄' })).toBeVisible()
+  await page.emulateMedia({ media: 'print' })
+  const sheet = page.locator('.print-sheet')
+  await expect(sheet).toBeVisible()
+  await expect(page.locator('.shell')).toBeHidden()
+  // 인쇄용 표는 화면 읽기 프로그램에서 숨겨 두어(aria-hidden) 역할(heading)로는 찾을 수 없으니 요소로 찾습니다.
+  await expect(sheet.locator('h1')).toHaveText('주간 학습 계획표')
+  await expect(sheet.locator('.print-head p')).toContainText('첫째')
+  await expect(sheet.locator('.print-subject')).toHaveText(['국어', '수학'])
+  await expect(sheet.locator('.print-item')).toHaveCount(19)
+  await expect(sheet.locator('.print-box.is-done')).toHaveCount(1)
+  if (testInfo.project.name === 'PC') {
+    // 실제 인쇄 모양 확인용 PDF (test-results 폴더). 창을 띄운(headed) 실행에서는 만들지 못해 건너뜁니다.
+    await page.pdf({ path: testInfo.outputPath('plan-print.pdf'), preferCSSPageSize: true, printBackground: true }).catch(() => undefined)
+  }
+  await page.emulateMedia({ media: 'screen' })
+  await expect(sheet).toBeHidden()
 
-  // 체크표로 돌아가도 같은 체크가 보임
+  // 체크표로 바꾸면 인쇄용 표도 체크표 모양 (학습 내용 줄마다 네모 7개)
   await viewPicker.getByRole('radio', { name: '체크표' }).check()
   await expect(page.locator('.check-table')).toBeVisible()
   await expect(page.getByRole('button', { name: /^연산 .* 오늘 완료$/ })).toHaveAttribute('aria-pressed', 'true')
+  await page.emulateMedia({ media: 'print' })
+  await expect(sheet.locator('h1')).toHaveText('주간 학습 체크표')
+  await expect(sheet.locator('.print-check .print-task')).toHaveText(['받아쓰기', '독서 20분', '연산'])
+  if (testInfo.project.name === 'PC') {
+    await page.pdf({ path: testInfo.outputPath('check-print.pdf'), preferCSSPageSize: true, printBackground: true }).catch(() => undefined)
+  }
+  await page.emulateMedia({ media: 'screen' })
+
+  // 새로고침해도 마지막 보기 방식(체크표)이 유지되고 체크도 남아 있음
+  await page.reload()
+  await expect(viewPicker.getByRole('radio', { name: '체크표' })).toBeChecked()
+  await expect(page.getByRole('button', { name: /^연산 .* 오늘 완료$/ })).toBeVisible()
   await expectNoHorizontalOverflow(page)
 })
