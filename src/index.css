@@ -1170,9 +1170,9 @@ fieldset.field > * + * {
   z-index: 3;
 }
 
-/* 과목 칸: 과목 색을 옅게 깐 바탕(밀어도 뒤가 비치지 않게 흰색 위에 얹음), 왼쪽 띠 */
+/* 과목 칸: 과목 색을 옅게 깐 바탕(밀어도 뒤가 비치지 않게 흰색 위에 얹음), 왼쪽 띠. 칸이 좁아 화살표는 빼고 긴 이름은 두 줄로 */
 .plan-table .plan-subject {
-  padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+  padding: 0.5rem 0.375rem 0.5rem 0.5rem;
   text-align: left;
   vertical-align: top;
   background: linear-gradient(var(--chip-bg), var(--chip-bg)) var(--color-surface);
@@ -1183,6 +1183,14 @@ fieldset.field > * + * {
 .plan-subject .subject-link {
   max-width: 100%;
   font-size: 0.9375rem;
+}
+
+.plan-subject .subject-link svg {
+  display: none;
+}
+
+.plan-subject .subject-name {
+  white-space: normal;
 }
 
 .plan-subject-sub {
@@ -1416,7 +1424,7 @@ fieldset.field > * + * {
   }
 
   .plan-table .col-label {
-    width: 6rem;
+    width: 6.5rem;
   }
 
   .plan-item {
