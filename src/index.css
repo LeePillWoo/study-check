@@ -996,8 +996,9 @@ fieldset.field > * + * {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
+  /* 휴대폰 칸 너비(약 33px)에서 옆 칸과 붙어 보이지 않도록 조금 작게 */
+  width: 1.625rem;
+  height: 1.625rem;
   color: #ffffff;
   border: 2px solid transparent;
   border-radius: 0.5rem;
