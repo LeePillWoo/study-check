@@ -11,19 +11,20 @@ import { useSelectedChild } from '../data/SelectedChild'
 import { printPage } from '../native/print'
 import { formatWeekRange, thisWeekStart } from '../utils/week'
 
-const VIEW_KEY = 'study-check:view'
+// 2026-10-31: 기본 보기를 요일별로 바꾸면서 저장 이름도 바꿨습니다. 이전에 고른 보기 대신 한 번은 요일별로 열립니다.
+const VIEW_KEY = 'study-check:view-v2'
 
-// 계획표가 먼저 (요청). 요일별은 계획표의 요일과 과목 위치를 바꾼 것
+// 요일별(왼쪽 요일, 위 과목)이 먼저이자 기본 (요청). 계획표는 왼쪽 과목, 위 요일
 const VIEW_OPTIONS: { value: BoardView; label: string }[] = [
-  { value: 'plan', label: '계획표' },
   { value: 'days', label: '요일별' },
+  { value: 'plan', label: '계획표' },
   { value: 'check', label: '체크표' },
 ]
 
-/** 마지막으로 고른 보기 방식. 앱을 다시 열어도, 다른 화면에 다녀와도 그대로입니다. 기본은 계획표 */
+/** 마지막으로 고른 보기 방식. 앱을 다시 열어도, 다른 화면에 다녀와도 그대로입니다. 기본은 요일별 */
 function loadView(): BoardView {
   const stored = localStorage.getItem(VIEW_KEY)
-  return VIEW_OPTIONS.some((option) => option.value === stored) ? (stored as BoardView) : 'plan'
+  return VIEW_OPTIONS.some((option) => option.value === stored) ? (stored as BoardView) : 'days'
 }
 
 /** 홈: 고른 아이의 주간 체크 보드 */

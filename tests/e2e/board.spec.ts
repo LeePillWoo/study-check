@@ -17,7 +17,7 @@ test('체크표: 과목과 학습 내용 등록, 요일 체크, 지난주 놓침
   await expect(page.getByRole('link', { name: '수학 학습 내용 2개' })).toBeVisible()
   await expectNoHorizontalOverflow(page)
 
-  // 기본은 계획표. 이 테스트는 체크표를 봅니다.
+  // 기본은 요일별. 이 테스트는 체크표를 봅니다.
   await page.goto('/')
   await viewPicker.getByRole('radio', { name: '체크표' }).check()
   await expect(page.locator('.check-table')).toBeVisible()
@@ -84,7 +84,7 @@ test('체크표: 과목과 학습 내용 등록, 요일 체크, 지난주 놓침
   await expectNoHorizontalOverflow(page)
 })
 
-test('계획표(기본): 과목 줄과 칸 안의 학습 내용, 체크, 보기 방식 기억, 인쇄용 표', async ({ page }, testInfo) => {
+test('계획표(왼쪽 과목): 과목 줄과 칸 안의 학습 내용, 체크, 보기 방식 기억, 인쇄용 표', async ({ page }, testInfo) => {
   const viewPicker = page.getByRole('radiogroup', { name: '보기 방식' })
   const planTable = page.locator('.plan-table')
   const summaryDone = page.locator('.week-summary strong')
@@ -94,9 +94,10 @@ test('계획표(기본): 과목 줄과 칸 안의 학습 내용, 체크, 보기 
   await addSubject(page, { name: '수학', color: '초록', tasks: [{ name: '연산', days: ['토', '일'] }] })
   await page.goto('/')
 
-  // 기본은 계획표: 과목이 줄이 되고 칸 안에 그날 학습 내용이 보임. 단추 순서는 [계획표, 요일별, 체크표]
-  await expect(viewPicker.locator('.segment > span')).toHaveText(['계획표', '요일별', '체크표'])
-  await expect(viewPicker.getByRole('radio', { name: '계획표' })).toBeChecked()
+  // 단추 순서는 [요일별, 계획표, 체크표], 기본은 요일별. 계획표로 바꾸면 과목이 줄이 되고 칸 안에 그날 학습 내용이 보임
+  await expect(viewPicker.locator('.segment > span')).toHaveText(['요일별', '계획표', '체크표'])
+  await expect(viewPicker.getByRole('radio', { name: '요일별' })).toBeChecked()
+  await viewPicker.getByRole('radio', { name: '계획표' }).check()
   await expect(planTable).toBeVisible()
   await expect(page.locator('.check-table')).toHaveCount(0)
   await expect(planTable.getByRole('link', { name: '국어 과목 설정' })).toBeVisible()
@@ -154,7 +155,7 @@ test('계획표(기본): 과목 줄과 칸 안의 학습 내용, 체크, 보기 
   await expectNoHorizontalOverflow(page)
 })
 
-test('요일별 계획표: 왼쪽 요일, 위 과목, 체크, 보기 방식 유지, A4 세로 인쇄, 과목이 많으면 옆으로 밀기', async ({ page }, testInfo) => {
+test('요일별(기본): 왼쪽 요일, 위 과목, 과목 4개까지 한 화면, 체크, 보기 방식 유지, A4 세로 인쇄', async ({ page }, testInfo) => {
   const nav = page.getByRole('navigation', { name: '주 메뉴' })
   const viewPicker = page.getByRole('radiogroup', { name: '보기 방식' })
   const table = page.locator('.dayplan-table')
@@ -164,20 +165,21 @@ test('요일별 계획표: 왼쪽 요일, 위 과목, 체크, 보기 방식 유�
   await addSubject(page, { name: '국어', tasks: [{ name: '받아쓰기' }, { name: '독서 20분', days: ['토', '일'] }] })
   await addSubject(page, { name: '수학', color: '초록', tasks: [{ name: '연산', days: ['토', '일'] }] })
   await addSubject(page, { name: '영어', color: '주황', tasks: [{ name: '단어 20개' }] })
+  await addSubject(page, { name: '과학', color: '하늘', tasks: [{ name: '실험 노트', days: ['월', '화', '목', '금'] }] })
   await page.goto('/')
 
-  // 요일별로 바꾸면 요일이 왼쪽 7줄, 과목이 위쪽 3열
-  await viewPicker.getByRole('radio', { name: '요일별' }).check()
+  // 처음 열면 요일별: 요일이 왼쪽 7줄, 과목이 위쪽 4열
+  await expect(viewPicker.getByRole('radio', { name: '요일별' })).toBeChecked()
   await expect(table).toBeVisible()
   await expect(page.locator('.plan-table, .check-table')).toHaveCount(0)
   await expect(table.getByRole('rowheader')).toHaveCount(7)
   await expect(table.locator('tbody th').first()).toContainText('월')
   await expect(table.locator('tbody th').last()).toContainText('일')
-  await expect(table.locator('.dayplan-subject .subject-name')).toHaveText(['국어', '수학', '영어'])
+  await expect(table.locator('.dayplan-subject .subject-name')).toHaveText(['국어', '수학', '영어', '과학'])
   await expect(table.locator('tbody th.is-today')).toHaveCount(1)
-  // 칸 안의 학습 내용: 받아쓰기 평일 5 + 독서 매일 7 + 연산 매일 7 + 단어 평일 5 = 24
-  await expect(table.locator('.plan-item')).toHaveCount(24)
-  // 과목 3개는 휴대폰 세로에서도 옆으로 밀지 않고 한 화면 너비에 들어감
+  // 칸 안의 학습 내용: 받아쓰기 평일 5 + 독서 매일 7 + 연산 매일 7 + 단어 평일 5 + 실험 노트(평일 기본에서 월·화·목·금을 꺼서 수요일만) 1 = 25
+  await expect(table.locator('.plan-item')).toHaveCount(25)
+  // 과목 4개는 휴대폰 세로(360px)에서도 옆으로 밀지 않고 한 화면 너비에 들어감
   await expect(page.locator('.dayplan-scroll.is-scrolling')).toHaveCount(0)
   await expect(page.getByText('옆으로 밀어서')).toHaveCount(0)
   await expectNoHorizontalOverflow(page)
@@ -187,6 +189,7 @@ test('요일별 계획표: 왼쪽 요일, 위 과목, 체크, 보기 방식 유�
   await page.getByRole('button', { name: /^연산 .* 오늘 미완료$/ }).click()
   await expect(page.getByRole('button', { name: /^연산 .* 오늘 완료$/ })).toHaveAttribute('aria-pressed', 'true')
   await expect(summaryDone).toHaveText('1')
+  await table.locator('tbody tr.is-today').screenshot({ path: testInfo.outputPath('1b-today-checked.png') })
 
   // 바꾼 보기 방식이 유지됨: 다른 화면에 다녀와도, 새로고침해도 요일별
   await nav.getByRole('link', { name: '과목' }).click()
@@ -203,9 +206,9 @@ test('요일별 계획표: 왼쪽 요일, 위 과목, 체크, 보기 방식 유�
   const sheet = page.locator('.print-sheet')
   await expect(sheet).toBeVisible()
   await expect(sheet.locator('h1')).toHaveText('주간 학습 계획표')
-  await expect(sheet.locator('.print-subject-head')).toHaveText(['국어', '수학', '영어'])
+  await expect(sheet.locator('.print-subject-head')).toHaveText(['국어', '수학', '영어', '과학'])
   await expect(sheet.locator('.print-byday tbody tr')).toHaveCount(7)
-  await expect(sheet.locator('.print-item')).toHaveCount(24)
+  await expect(sheet.locator('.print-item')).toHaveCount(25)
   await expect(sheet.locator('.print-box.is-done')).toHaveCount(1)
   if (testInfo.project.name === 'PC') {
     // A4 세로 한 장 (첫 장이 빈 종이로 나오지 않는지: 쪽 수 1)
@@ -215,7 +218,6 @@ test('요일별 계획표: 왼쪽 요일, 위 과목, 체크, 보기 방식 유�
   await page.emulateMedia({ media: 'screen' })
 
   // 과목이 5개가 되면 휴대폰 세로에서는 표 안에서 옆으로 밀어서 봄 (화면 자체는 넓어지지 않음). 넓은 화면은 그대로 맞춤
-  await addSubject(page, { name: '과학', color: '하늘', tasks: [{ name: '실험 노트' }] })
   await addSubject(page, { name: '피아노', color: '보라', tasks: [{ name: '연습 30분' }] })
   await page.goto('/')
   await expect(viewPicker.getByRole('radio', { name: '요일별' })).toBeChecked()

@@ -6,11 +6,13 @@ import { SubjectLink } from './BoardRows'
 import type { BoardTableProps } from './boardTypes'
 import PlanItem from './PlanItem'
 
-/** 과목 열 하나의 최소 너비(rem). 화면이 이보다 좁으면 표 안에서 옆으로 밀어서 봅니다. */
-const MIN_SUBJECT_REM = 4.5
+/** 과목 열 하나의 최소 너비(rem). 화면이 이보다 좁으면 표 안에서 옆으로 밀어서 봅니다. (360px 휴대폰 세로에 과목 4개까지 들어감) */
+const MIN_SUBJECT_REM = 3.75
+/** 어차피 옆으로 밀어야 할 때의 과목 열 너비(rem). 조금 넓게 둬서 학습 내용 글자가 덜 끊기게 합니다. */
+const SCROLL_SUBJECT_REM = 4.5
 
 /**
- * 요일별 계획표: 계획표의 요일과 과목 위치를 바꾼 보기입니다. 왼쪽에 월~일, 위에 과목, 칸 안에 그날 할 학습 내용.
+ * 요일별 계획표 (기본 보기): 계획표의 요일과 과목 위치를 바꾼 보기입니다. 왼쪽에 월~일, 위에 과목, 칸 안에 그날 할 학습 내용.
  * 요일이 세로로 내려가서 휴대폰에서도 옆으로 밀지 않고 한 주를 위아래로 훑어봅니다.
  * - 과목이 화면에 다 들어가면: 표가 화면 너비에 맞고, 과목 줄이 스크롤해도 위에 붙어 따라옵니다.
  * - 과목이 많아 다 안 들어가면: 표 안에서 옆으로 밀어서 보고, 요일 열은 왼쪽에 붙어 있습니다.
@@ -28,8 +30,9 @@ export default function DayPlanTable({ subjects, tasksOf, dates, todayStr, isDon
     if (!container) return
     const update = () => {
       const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
-      const needed = (cornerRef.current?.offsetWidth ?? 0) + count * MIN_SUBJECT_REM * rootPx
-      setMinWidth(container.clientWidth + 1 < needed ? Math.ceil(needed) : null)
+      const corner = cornerRef.current?.offsetWidth ?? 0
+      const fits = container.clientWidth + 1 >= corner + count * MIN_SUBJECT_REM * rootPx
+      setMinWidth(fits ? null : Math.ceil(corner + count * SCROLL_SUBJECT_REM * rootPx))
     }
     update()
     const observer = new ResizeObserver(update)

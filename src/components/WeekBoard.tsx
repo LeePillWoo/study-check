@@ -18,7 +18,7 @@ interface WeekBoardProps {
   /** 보여줄 주의 월요일 */
   weekStart: DateStr
   onChangeWeek(weekStart: DateStr): void
-  /** 계획표(기본), 요일별, 체크표 */
+  /** 요일별(기본), 계획표, 체크표 */
   view: BoardView
 }
 
@@ -50,7 +50,7 @@ export default function WeekBoard({ child, weekStart, onChangeWeek, view }: Week
   const tableProps = { subjects, tasksOf, dates, todayStr, isDone, onToggle: toggle, dayTotals }
 
   return (
-    <div className="card board-card">
+    <div className={`card board-card is-view-${view}`}>
       <div className="board-toolbar">
         <div className="week-nav">
           <button type="button" className="icon-btn" onClick={() => onChangeWeek(addDays(weekStart, -7))} aria-label="지난주">
