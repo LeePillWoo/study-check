@@ -7,7 +7,7 @@ import type { BoardTableProps } from './boardTypes'
 import PlanItem from './PlanItem'
 
 /** 과목 열 하나의 최소 너비(rem). 화면이 이보다 좁으면 표 안에서 옆으로 밀어서 봅니다. (360px 휴대폰 세로에 과목 4개까지 들어감) */
-const MIN_SUBJECT_REM = 3.75
+const MIN_SUBJECT_REM = 3.5
 /** 어차피 옆으로 밀어야 할 때의 과목 열 너비(rem). 조금 넓게 둬서 학습 내용 글자가 덜 끊기게 합니다. */
 const SCROLL_SUBJECT_REM = 4.5
 

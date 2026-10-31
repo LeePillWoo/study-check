@@ -1297,7 +1297,7 @@ fieldset.field > * + * {
  * 과목이 많으면(DayPlanTable이 .is-scrolling을 붙임) 표 안에서 옆으로 밀고, 요일 열은 왼쪽에 붙어 있습니다.
  */
 .dayplan-table .col-day {
-  width: 2.5rem;
+  width: 3rem;
 }
 
 .dayplan-scroll.is-scrolling {
@@ -1344,13 +1344,37 @@ fieldset.field > * + * {
 
 .dayplan-table .dayplan-day {
   padding: 0.5rem 0.125rem;
-  background: var(--color-surface);
+  background: var(--color-surface-muted);
   border-top: 1px solid var(--color-border);
+}
+
+/* 요일 칸이 눈에 띄도록 요일과 날짜를 조금 크게 */
+.dayplan-day .day-head {
+  gap: 0.1875rem;
+}
+
+.dayplan-day .day-name {
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.dayplan-day .day-num {
+  font-size: 0.875rem;
+}
+
+/* 토요일 파랑, 일요일 빨강은 그대로 */
+.dayplan-day.wd-6 .day-name {
+  color: var(--color-saturday);
+}
+
+.dayplan-day.wd-0 .day-name {
+  color: var(--color-sunday);
 }
 
 .dayplan-day-total {
   color: var(--color-muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.2;
 }
@@ -1364,9 +1388,12 @@ fieldset.field > * + * {
 }
 
 /* 오늘 줄: 옅은 남색 바탕 (요일 칸은 옆으로 밀 때 뒤가 비치지 않게 흰색 위에 얹음) */
-.dayplan-row.is-today td,
-.dayplan-row.is-today .dayplan-day {
+.dayplan-row.is-today td {
   background: linear-gradient(rgb(79 70 229 / 0.06), rgb(79 70 229 / 0.06)) var(--color-surface);
+}
+
+.dayplan-row.is-today .dayplan-day {
+  background: linear-gradient(rgb(79 70 229 / 0.1), rgb(79 70 229 / 0.1)) var(--color-surface);
 }
 
 /* 칸이 좁아서 학습 내용 안쪽 여백을 줄입니다. */
@@ -1523,7 +1550,7 @@ fieldset.field > * + * {
   }
 
   .dayplan-table .col-day {
-    width: 2.125rem;
+    width: 2.75rem;
   }
 
   .dayplan-table .board-head th.dayplan-subject {
@@ -1550,7 +1577,7 @@ fieldset.field > * + * {
   .dayplan-table .plan-item {
     display: block;
     min-height: 0;
-    padding: 0.25rem 0.1875rem;
+    padding: 0.25rem 0.125rem;
     font-size: 0.75rem;
     line-height: 1.25;
     background: var(--color-surface);
@@ -1582,7 +1609,7 @@ fieldset.field > * + * {
 
 @media (min-width: 600px) {
   .dayplan-table .col-day {
-    width: 4rem;
+    width: 4.75rem;
   }
 
   .dayplan-table .plan-cell {
