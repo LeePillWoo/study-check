@@ -1180,16 +1180,19 @@ fieldset.field > * + * {
   border-left: 3px solid var(--chip-solid);
 }
 
-.plan-subject .subject-link {
+.plan-subject .subject-link,
+.dayplan-subject .subject-link {
   max-width: 100%;
   font-size: 0.9375rem;
 }
 
-.plan-subject .subject-link svg {
+.plan-subject .subject-link svg,
+.dayplan-subject .subject-link svg {
   display: none;
 }
 
-.plan-subject .subject-name {
+.plan-subject .subject-name,
+.dayplan-subject .subject-name {
   white-space: normal;
 }
 
@@ -1286,6 +1289,94 @@ fieldset.field > * + * {
 
 .plan-hint {
   font-size: 0.8125rem;
+}
+
+/* ===== 요일별 계획표 (왼쪽 요일, 위 과목, 칸 안에 그날 학습 내용) ===== */
+/*
+ * 과목이 화면에 다 들어가면 표를 화면 너비에 맞추고, 과목 줄은 스크롤해도 위쪽 막대 아래에 붙어 따라옵니다.
+ * 과목이 많으면(DayPlanTable이 .is-scrolling을 붙임) 표 안에서 옆으로 밀고, 요일 열은 왼쪽에 붙어 있습니다.
+ */
+.dayplan-table .col-day {
+  width: 2.5rem;
+}
+
+.dayplan-scroll.is-scrolling {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 옆으로 미는 상자 안에서는 위에 붙는 기능이 동작하지 않아서 끕니다. (켜 두면 과목 줄이 아래로 밀려 보임) */
+.dayplan-scroll.is-scrolling .board-head th {
+  top: auto;
+}
+
+.dayplan-scroll.is-scrolling .dayplan-corner,
+.dayplan-scroll.is-scrolling .dayplan-day {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+.dayplan-scroll.is-scrolling .dayplan-corner {
+  z-index: 3;
+}
+
+/* 과목 머리 칸: 과목 색을 옅게 깐 바탕(위에 붙어 따라올 때 뒤가 비치지 않게 흰색 위에 얹음), 위쪽 띠 */
+.dayplan-table .board-head th.dayplan-subject {
+  height: auto;
+  padding: 0.375rem 0.375rem 0.375rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+  background: linear-gradient(var(--chip-bg), var(--chip-bg)) var(--color-surface);
+  border-top: 3px solid var(--chip-solid);
+  border-left: 1px solid var(--color-border);
+}
+
+.dayplan-subject .subject-link {
+  margin-left: -0.375rem;
+}
+
+/* 요일 칸: 요일, 날짜(오늘은 남색 동그라미), 그날 완료/계획 수. 칸 안 학습 내용과 함께 위에서부터 */
+.dayplan-table .dayplan-day,
+.dayplan-table .plan-cell {
+  vertical-align: top;
+}
+
+.dayplan-table .dayplan-day {
+  padding: 0.5rem 0.125rem;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+}
+
+.dayplan-day-total {
+  color: var(--color-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.dayplan-day.is-today .dayplan-day-total {
+  color: var(--color-primary);
+}
+
+.dayplan-row td {
+  border-left: 1px solid var(--color-border);
+}
+
+/* 오늘 줄: 옅은 남색 바탕 (요일 칸은 옆으로 밀 때 뒤가 비치지 않게 흰색 위에 얹음) */
+.dayplan-row.is-today td,
+.dayplan-row.is-today .dayplan-day {
+  background: linear-gradient(rgb(79 70 229 / 0.06), rgb(79 70 229 / 0.06)) var(--color-surface);
+}
+
+/* 칸이 좁아서 학습 내용 안쪽 여백을 줄입니다. */
+.dayplan-table .plan-cell {
+  padding: 0.25rem 0.1875rem;
+}
+
+.dayplan-table .plan-item {
+  gap: 0.3125rem;
+  padding: 0.25rem 0.1875rem;
 }
 
 /* ===== 가로 화면 (PC, 휴대폰 가로): 왼쪽 메뉴 ===== */
@@ -1418,6 +1509,37 @@ fieldset.field > * + * {
   }
 }
 
+@media (max-width: 599px) {
+  .dayplan-table .col-day {
+    width: 2.25rem;
+  }
+
+  .dayplan-table .plan-cell {
+    padding: 0.25rem 0.125rem;
+  }
+
+  .dayplan-table .plan-item {
+    gap: 0.25rem;
+    padding: 0.25rem 0.0625rem;
+    font-size: 0.75rem;
+  }
+
+  .dayplan-table .plan-item .check-box {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+@media (min-width: 600px) {
+  .dayplan-table .col-day {
+    width: 4rem;
+  }
+
+  .dayplan-table .plan-cell {
+    padding: 0.375rem 0.3125rem;
+  }
+}
+
 @media (min-width: 1024px) {
   .board-table .col-label {
     width: 14rem;
@@ -1446,6 +1568,26 @@ fieldset.field > * + * {
   .topbar.has-switcher .brand-text {
     display: none;
   }
+
+  /* 보기 단추 3개와 인쇄 단추가 한 줄에 들어가도록: 단추 여백을 줄이고, 인쇄는 프린터 그림만 (이름은 화면 읽기 프로그램에 그대로) */
+  .board-actions .segment > span {
+    padding: 0 0.625rem;
+  }
+
+  .print-btn {
+    width: 2.75rem;
+    padding: 0;
+  }
+
+  .print-btn .btn-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    white-space: nowrap;
+    clip: rect(0 0 0 0);
+  }
 }
 
 /* ===== 인쇄: 보고 있는 주간표를 A4 가로 한 장에 ===== */
@@ -1463,11 +1605,23 @@ fieldset.field > * + * {
     margin: 10mm 12mm;
   }
 
+  /* 요일별 계획표는 요일이 위아래로 7줄이라 A4 세로가 알맞습니다. */
+  @page portrait-sheet {
+    size: A4 portrait;
+    margin: 10mm 12mm;
+  }
+
+  .print-sheet.is-portrait {
+    page: portrait-sheet;
+  }
+
   :root {
     font-size: 11pt;
     background: #ffffff;
   }
 
+  /* 앱 화면은 통째로 뺍니다. (#root 상자가 남아 있으면 요일별 인쇄에서 첫 장이 빈 가로 종이로 나옴) */
+  #root,
   .shell,
   dialog {
     display: none !important;
@@ -1565,6 +1719,34 @@ fieldset.field > * + * {
   /* 계획표: 칸 안에 그날 학습 내용. 손으로 적을 여백이 있도록 칸을 조금 높게 */
   .print-plan td {
     height: 16mm;
+  }
+
+  /* 요일별: 왼쪽 요일, 위 과목(과목 색 위쪽 띠). 요일 7줄이 A4 세로 한 장에 들어가는 높이 */
+  .print-byday .print-col-day {
+    width: 15mm;
+  }
+
+  .print-byday thead th.print-subject-head {
+    background: color-mix(in srgb, var(--c) 12%, #ffffff);
+    border-top: 1.2mm solid var(--c);
+  }
+
+  .print-byday tbody th {
+    font-size: 10.5pt;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .print-byday tbody th.wd-0 {
+    color: #c0262d;
+  }
+
+  .print-byday tbody th.wd-6 {
+    color: #2c4fc9;
+  }
+
+  .print-byday td {
+    height: 29mm;
   }
 
   .print-item {

@@ -94,9 +94,8 @@ test('계획표(기본): 과목 줄과 칸 안의 학습 내용, 체크, 보기 
   await addSubject(page, { name: '수학', color: '초록', tasks: [{ name: '연산', days: ['토', '일'] }] })
   await page.goto('/')
 
-  // 기본은 계획표: 과목이 줄이 되고 칸 안에 그날 학습 내용이 보임. 단추 순서는 [계획표, 체크표]
-  await expect(viewPicker.getByRole('radio')).toHaveCount(2)
-  await expect(viewPicker.getByRole('radio').first()).toHaveAccessibleName('계획표')
+  // 기본은 계획표: 과목이 줄이 되고 칸 안에 그날 학습 내용이 보임. 단추 순서는 [계획표, 요일별, 체크표]
+  await expect(viewPicker.locator('.segment > span')).toHaveText(['계획표', '요일별', '체크표'])
   await expect(viewPicker.getByRole('radio', { name: '계획표' })).toBeChecked()
   await expect(planTable).toBeVisible()
   await expect(page.locator('.check-table')).toHaveCount(0)
@@ -153,4 +152,76 @@ test('계획표(기본): 과목 줄과 칸 안의 학습 내용, 체크, 보기 
   await expect(viewPicker.getByRole('radio', { name: '체크표' })).toBeChecked()
   await expect(page.getByRole('button', { name: /^연산 .* 오늘 완료$/ })).toBeVisible()
   await expectNoHorizontalOverflow(page)
+})
+
+test('요일별 계획표: 왼쪽 요일, 위 과목, 체크, 보기 방식 유지, A4 세로 인쇄, 과목이 많으면 옆으로 밀기', async ({ page }, testInfo) => {
+  const nav = page.getByRole('navigation', { name: '주 메뉴' })
+  const viewPicker = page.getByRole('radiogroup', { name: '보기 방식' })
+  const table = page.locator('.dayplan-table')
+  const summaryDone = page.locator('.week-summary strong')
+
+  await addChildren(page, ['첫째'])
+  await addSubject(page, { name: '국어', tasks: [{ name: '받아쓰기' }, { name: '독서 20분', days: ['토', '일'] }] })
+  await addSubject(page, { name: '수학', color: '초록', tasks: [{ name: '연산', days: ['토', '일'] }] })
+  await addSubject(page, { name: '영어', color: '주황', tasks: [{ name: '단어 20개' }] })
+  await page.goto('/')
+
+  // 요일별로 바꾸면 요일이 왼쪽 7줄, 과목이 위쪽 3열
+  await viewPicker.getByRole('radio', { name: '요일별' }).check()
+  await expect(table).toBeVisible()
+  await expect(page.locator('.plan-table, .check-table')).toHaveCount(0)
+  await expect(table.getByRole('rowheader')).toHaveCount(7)
+  await expect(table.locator('tbody th').first()).toContainText('월')
+  await expect(table.locator('tbody th').last()).toContainText('일')
+  await expect(table.locator('.dayplan-subject .subject-name')).toHaveText(['국어', '수학', '영어'])
+  await expect(table.locator('tbody th.is-today')).toHaveCount(1)
+  // 칸 안의 학습 내용: 받아쓰기 평일 5 + 독서 매일 7 + 연산 매일 7 + 단어 평일 5 = 24
+  await expect(table.locator('.plan-item')).toHaveCount(24)
+  // 과목 3개는 휴대폰 세로에서도 옆으로 밀지 않고 한 화면 너비에 들어감
+  await expect(page.locator('.dayplan-scroll.is-scrolling')).toHaveCount(0)
+  await expect(page.getByText('옆으로 밀어서')).toHaveCount(0)
+  await expectNoHorizontalOverflow(page)
+  await page.screenshot({ path: testInfo.outputPath('1-days.png'), fullPage: true })
+
+  // 오늘 칸의 학습 내용을 누르면 체크
+  await page.getByRole('button', { name: /^연산 .* 오늘 미완료$/ }).click()
+  await expect(page.getByRole('button', { name: /^연산 .* 오늘 완료$/ })).toHaveAttribute('aria-pressed', 'true')
+  await expect(summaryDone).toHaveText('1')
+
+  // 바꾼 보기 방식이 유지됨: 다른 화면에 다녀와도, 새로고침해도 요일별
+  await nav.getByRole('link', { name: '과목' }).click()
+  await nav.getByRole('link', { name: '홈' }).click()
+  await expect(viewPicker.getByRole('radio', { name: '요일별' })).toBeChecked()
+  await page.reload()
+  await expect(viewPicker.getByRole('radio', { name: '요일별' })).toBeChecked()
+  await expect(table).toBeVisible()
+  await expect(page.getByRole('button', { name: /^연산 .* 오늘 완료$/ })).toBeVisible()
+
+  // 인쇄: 요일별 모양 그대로 (요일 7줄, 과목 3열), 체크한 것은 채워서
+  await expect(page.getByRole('button', { name: '인쇄' })).toBeVisible()
+  await page.emulateMedia({ media: 'print' })
+  const sheet = page.locator('.print-sheet')
+  await expect(sheet).toBeVisible()
+  await expect(sheet.locator('h1')).toHaveText('주간 학습 계획표')
+  await expect(sheet.locator('.print-subject-head')).toHaveText(['국어', '수학', '영어'])
+  await expect(sheet.locator('.print-byday tbody tr')).toHaveCount(7)
+  await expect(sheet.locator('.print-item')).toHaveCount(24)
+  await expect(sheet.locator('.print-box.is-done')).toHaveCount(1)
+  if (testInfo.project.name === 'PC') {
+    // A4 세로 한 장 (첫 장이 빈 종이로 나오지 않는지: 쪽 수 1)
+    const pdf = await page.pdf({ path: testInfo.outputPath('days-print.pdf'), preferCSSPageSize: true, printBackground: true }).catch(() => null)
+    if (pdf) expect(pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g)?.length).toBe(1)
+  }
+  await page.emulateMedia({ media: 'screen' })
+
+  // 과목이 5개가 되면 휴대폰 세로에서는 표 안에서 옆으로 밀어서 봄 (화면 자체는 넓어지지 않음). 넓은 화면은 그대로 맞춤
+  await addSubject(page, { name: '과학', color: '하늘', tasks: [{ name: '실험 노트' }] })
+  await addSubject(page, { name: '피아노', color: '보라', tasks: [{ name: '연습 30분' }] })
+  await page.goto('/')
+  await expect(viewPicker.getByRole('radio', { name: '요일별' })).toBeChecked()
+  await expect(table.locator('.dayplan-subject')).toHaveCount(5)
+  const narrow = testInfo.project.name === '폰-세로'
+  await expect(page.locator('.dayplan-scroll.is-scrolling')).toHaveCount(narrow ? 1 : 0)
+  await expectNoHorizontalOverflow(page)
+  await page.screenshot({ path: testInfo.outputPath('2-days-many.png') })
 })

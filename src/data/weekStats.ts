@@ -36,6 +36,12 @@ export function progressOf(tasks: Task[], dates: DateStr[], isDone: (taskId: str
   return { done, planned }
 }
 
+/** 계획표 칸에 보일 학습 내용: 그날 계획한 것과, 계획에 없어도 그날 체크한 것 (순서는 그대로) */
+export function dayItems(tasks: Task[], date: DateStr, isDone: (taskId: string, date: DateStr) => boolean): Task[] {
+  const weekday = weekdayOf(date)
+  return tasks.filter((task) => task.weekdays.includes(weekday) || isDone(task.id, date))
+}
+
 /** 완료 비율(0~100). 계획보다 많이 했어도 100을 넘지 않습니다. */
 export function percent(progress: Progress): number {
   if (progress.planned === 0) return progress.done > 0 ? 100 : 0

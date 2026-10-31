@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { weekDates } from '../utils/week'
 import type { Task } from './types'
-import { cellState, percent, progressOf } from './weekStats'
+import { cellState, dayItems, percent, progressOf } from './weekStats'
 
 // 평일(월~금)에 계획한 학습 내용
 const task: Task = { id: 't1', subjectId: 's1', name: '연산 10분', weekdays: [1, 2, 3, 4, 5], order: 0, createdAt: '', updatedAt: '' }
@@ -22,6 +22,21 @@ describe('칸 상태', () => {
 
   it('체크하면 놓침이 풀림', () => {
     expect(cellState(task, '2026-10-26', true, TODAY)).toEqual({ planned: true, done: true, missed: false })
+  })
+})
+
+describe('계획표 칸에 보일 학습 내용', () => {
+  // 독서는 토·일만 계획
+  const weekend: Task = { ...task, id: 't2', name: '독서', weekdays: [6, 0], order: 1 }
+
+  it('그날 계획한 것만, 순서대로', () => {
+    expect(dayItems([task, weekend], '2026-10-26', () => false).map((t) => t.id)).toEqual(['t1'])
+    expect(dayItems([task, weekend], '2026-10-31', () => false).map((t) => t.id)).toEqual(['t2'])
+  })
+
+  it('계획에 없어도 그날 체크했으면 보임', () => {
+    const done = (taskId: string, date: string) => taskId === 't2' && date === '2026-10-26'
+    expect(dayItems([task, weekend], '2026-10-26', done).map((t) => t.id)).toEqual(['t1', 't2'])
   })
 })
 

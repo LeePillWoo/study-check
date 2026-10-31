@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom'
 import { useChecks } from '../data/checks'
 import { useSubjects } from '../data/subjects'
 import { useTasks } from '../data/tasks'
-import type { Child } from '../data/types'
+import type { Child, Subject, Task } from '../data/types'
+import { dayItems } from '../data/weekStats'
 import { WEEKDAY_NAMES, dateParts, weekdayOf, type DateStr } from '../utils/date'
 import { formatWeekRange, weekDates } from '../utils/week'
 import type { BoardView } from './boardTypes'
@@ -14,96 +15,174 @@ interface BoardPrintSheetProps {
   view: BoardView
 }
 
+interface PrintTableProps {
+  subjects: Subject[]
+  tasksOf(subjectId: string): Task[]
+  dates: DateStr[]
+  isDone(taskId: string, date: DateStr): boolean
+}
+
 /**
- * 인쇄용 주간표 (A4 가로 한 장). 화면에서는 숨겨져 있다가 인쇄할 때만 보입니다. (index.css의 @media print)
- * 보고 있는 표를 그대로 인쇄합니다. 계획표면 과목 줄과 칸 안의 학습 내용, 체크표면 학습 내용 줄과 체크 칸입니다.
+ * 인쇄용 주간표 (A4 한 장). 화면에서는 숨겨져 있다가 인쇄할 때만 보입니다. (index.css의 @media print)
+ * 보고 있는 표를 그대로 인쇄합니다.
+ * - 계획표: 과목 줄과 칸 안의 학습 내용 (A4 가로)
+ * - 요일별: 요일 줄과 과목 열, 칸 안의 학습 내용 (A4 세로)
+ * - 체크표: 학습 내용 줄과 체크 칸 (A4 가로)
  * 체크한 칸은 채워서 나오므로, 주 초에 뽑으면 손으로 체크할 빈 표가 되고 주 중간에 뽑으면 진행 상황이 나옵니다.
  */
 export default function BoardPrintSheet({ child, weekStart, view }: BoardPrintSheetProps) {
   const { subjects } = useSubjects(child.id)
   const { tasksOf } = useTasks()
   const { isDone } = useChecks()
-  const dates = weekDates(weekStart)
+  const props: PrintTableProps = { subjects, tasksOf, dates: weekDates(weekStart), isDone }
 
   return createPortal(
-    <div className="print-sheet" aria-hidden="true">
+    <div className={view === 'days' ? 'print-sheet is-portrait' : 'print-sheet'} aria-hidden="true">
       <header className="print-head">
-        <h1>{view === 'plan' ? '주간 학습 계획표' : '주간 학습 체크표'}</h1>
+        <h1>{view === 'check' ? '주간 학습 체크표' : '주간 학습 계획표'}</h1>
         <p>
           {child.name} · {formatWeekRange(weekStart)} · 학습체크
         </p>
       </header>
-      <table className={`print-table ${view === 'plan' ? 'print-plan' : 'print-check'}`}>
-        <colgroup>
-          <col className="print-col-label" />
-          <col span={7} />
-        </colgroup>
-        <thead>
-          <tr>
-            <th>{view === 'plan' ? '과목' : '학습 내용'}</th>
-            {dates.map((date) => {
-              const weekday = weekdayOf(date)
-              const { month, day } = dateParts(date)
-              return (
-                <th key={date} className={`wd-${weekday}`}>
-                  {WEEKDAY_NAMES[weekday]}
-                  <span className="print-day-date">
-                    {month}/{day}
-                  </span>
-                </th>
-              )
-            })}
-          </tr>
-        </thead>
-        {view === 'plan' ? (
-          <tbody>
-            {subjects.map((subject) => {
-              const tasks = tasksOf(subject.id)
-              return (
-                <tr key={subject.id} style={{ '--c': subject.color } as CSSProperties}>
-                  <th className="print-subject">{subject.name}</th>
-                  {dates.map((date) => {
-                    const weekday = weekdayOf(date)
-                    // 그날 계획한 학습 내용과, 계획에 없어도 그날 체크한 것
-                    const items = tasks.filter((task) => task.weekdays.includes(weekday) || isDone(task.id, date))
-                    return (
-                      <td key={date}>
-                        {items.map((task) => (
-                          <div key={task.id} className="print-item">
-                            <PrintBox done={isDone(task.id, date)} />
-                            <span>{task.name}</span>
-                          </div>
-                        ))}
-                      </td>
-                    )
-                  })}
-                </tr>
-              )
-            })}
-          </tbody>
-        ) : (
-          subjects.map((subject) => (
-            <tbody key={subject.id} style={{ '--c': subject.color } as CSSProperties}>
-              <tr className="print-band">
-                <th colSpan={8}>{subject.name}</th>
-              </tr>
-              {tasksOf(subject.id).map((task) => (
-                <tr key={task.id}>
-                  <th className="print-task">{task.name}</th>
-                  {dates.map((date) => {
-                    const planned = task.weekdays.includes(weekdayOf(date))
-                    const done = isDone(task.id, date)
-                    return <td key={date}>{planned || done ? <PrintBox done={done} /> : <span className="print-dot" />}</td>
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          ))
-        )}
-      </table>
+      {view === 'plan' && <PrintPlan {...props} />}
+      {view === 'days' && <PrintByDay {...props} />}
+      {view === 'check' && <PrintCheck {...props} />}
       {subjects.length === 0 && <p className="print-empty">과목이 없습니다.</p>}
     </div>,
     document.body,
+  )
+}
+
+/** 요일 머리 칸: '월' 아래에 '10/26' */
+function DayLabel({ date }: { date: DateStr }) {
+  const { month, day } = dateParts(date)
+  return (
+    <>
+      {WEEKDAY_NAMES[weekdayOf(date)]}
+      <span className="print-day-date">
+        {month}/{day}
+      </span>
+    </>
+  )
+}
+
+function DayHeads({ dates, label }: { dates: DateStr[]; label: string }) {
+  return (
+    <thead>
+      <tr>
+        <th>{label}</th>
+        {dates.map((date) => (
+          <th key={date} className={`wd-${weekdayOf(date)}`}>
+            <DayLabel date={date} />
+          </th>
+        ))}
+      </tr>
+    </thead>
+  )
+}
+
+/** 칸 안의 학습 내용 목록: 체크 네모와 이름 */
+function PrintItems({ tasks, date, isDone }: { tasks: Task[]; date: DateStr; isDone: PrintTableProps['isDone'] }) {
+  return (
+    <>
+      {dayItems(tasks, date, isDone).map((task) => (
+        <div key={task.id} className="print-item">
+          <PrintBox done={isDone(task.id, date)} />
+          <span>{task.name}</span>
+        </div>
+      ))}
+    </>
+  )
+}
+
+/** 계획표: 왼쪽 과목, 위 요일 */
+function PrintPlan({ subjects, tasksOf, dates, isDone }: PrintTableProps) {
+  return (
+    <table className="print-table print-plan">
+      <colgroup>
+        <col className="print-col-label" />
+        <col span={7} />
+      </colgroup>
+      <DayHeads dates={dates} label="과목" />
+      <tbody>
+        {subjects.map((subject) => (
+          <tr key={subject.id} style={{ '--c': subject.color } as CSSProperties}>
+            <th className="print-subject">{subject.name}</th>
+            {dates.map((date) => (
+              <td key={date}>
+                <PrintItems tasks={tasksOf(subject.id)} date={date} isDone={isDone} />
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+/** 요일별: 왼쪽 요일, 위 과목 */
+function PrintByDay({ subjects, tasksOf, dates, isDone }: PrintTableProps) {
+  return (
+    <table className="print-table print-byday">
+      <colgroup>
+        <col className="print-col-day" />
+        <col span={subjects.length} />
+      </colgroup>
+      <thead>
+        <tr>
+          <th>요일</th>
+          {subjects.map((subject) => (
+            <th key={subject.id} className="print-subject-head" style={{ '--c': subject.color } as CSSProperties}>
+              {subject.name}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {dates.map((date) => (
+          <tr key={date}>
+            <th className={`print-day wd-${weekdayOf(date)}`}>
+              <DayLabel date={date} />
+            </th>
+            {subjects.map((subject) => (
+              <td key={subject.id} style={{ '--c': subject.color } as CSSProperties}>
+                <PrintItems tasks={tasksOf(subject.id)} date={date} isDone={isDone} />
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+/** 체크표: 학습 내용 줄마다 네모 7개. 계획 없는 요일은 작은 점 */
+function PrintCheck({ subjects, tasksOf, dates, isDone }: PrintTableProps) {
+  return (
+    <table className="print-table print-check">
+      <colgroup>
+        <col className="print-col-label" />
+        <col span={7} />
+      </colgroup>
+      <DayHeads dates={dates} label="학습 내용" />
+      {subjects.map((subject) => (
+        <tbody key={subject.id} style={{ '--c': subject.color } as CSSProperties}>
+          <tr className="print-band">
+            <th colSpan={8}>{subject.name}</th>
+          </tr>
+          {tasksOf(subject.id).map((task) => (
+            <tr key={task.id}>
+              <th className="print-task">{task.name}</th>
+              {dates.map((date) => {
+                const planned = task.weekdays.includes(weekdayOf(date))
+                const done = isDone(task.id, date)
+                return <td key={date}>{planned || done ? <PrintBox done={done} /> : <span className="print-dot" />}</td>
+              })}
+            </tr>
+          ))}
+        </tbody>
+      ))}
+    </table>
   )
 }
 

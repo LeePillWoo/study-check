@@ -13,15 +13,17 @@ import { formatWeekRange, thisWeekStart } from '../utils/week'
 
 const VIEW_KEY = 'study-check:view'
 
-// 계획표가 먼저 (요청). 체크표는 두 번째
+// 계획표가 먼저 (요청). 요일별은 계획표의 요일과 과목 위치를 바꾼 것
 const VIEW_OPTIONS: { value: BoardView; label: string }[] = [
   { value: 'plan', label: '계획표' },
+  { value: 'days', label: '요일별' },
   { value: 'check', label: '체크표' },
 ]
 
-/** 마지막으로 고른 보기 방식. 기본은 계획표 */
+/** 마지막으로 고른 보기 방식. 앱을 다시 열어도, 다른 화면에 다녀와도 그대로입니다. 기본은 계획표 */
 function loadView(): BoardView {
-  return localStorage.getItem(VIEW_KEY) === 'check' ? 'check' : 'plan'
+  const stored = localStorage.getItem(VIEW_KEY)
+  return VIEW_OPTIONS.some((option) => option.value === stored) ? (stored as BoardView) : 'plan'
 }
 
 /** 홈: 고른 아이의 주간 체크 보드 */
@@ -52,7 +54,7 @@ export default function HomePage() {
     )
   }
 
-  const viewLabel = view === 'plan' ? '계획표' : '체크표'
+  const viewLabel = view === 'check' ? '체크표' : '계획표'
 
   return (
     <section>
@@ -62,10 +64,10 @@ export default function HomePage() {
         actions={
           <div className="board-actions">
             <Segmented<BoardView> label="보기 방식" name="board-view" value={view} options={VIEW_OPTIONS} onChange={changeView} />
-            <button type="button" className="btn btn-secondary btn-small"
+            <button type="button" className="btn btn-secondary btn-small print-btn"
               onClick={() => printPage(`학습체크 ${viewLabel} ${selectedChild.name} ${formatWeekRange(weekStart)}`)}>
               <PrinterIcon />
-              인쇄
+              <span className="btn-label">인쇄</span>
             </button>
           </div>
         }

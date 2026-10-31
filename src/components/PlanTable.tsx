@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { softColorVars } from '../data/colors'
-import type { Task } from '../data/types'
-import { cellState, progressOf, type CellState } from '../data/weekStats'
-import { formatDate, weekdayOf, type DateStr } from '../utils/date'
+import { cellState, dayItems, progressOf } from '../data/weekStats'
 import { DayFootRow, DayHeadRow, SubjectLink } from './BoardRows'
 import type { BoardTableProps } from './boardTypes'
+import PlanItem from './PlanItem'
 
 /**
  * 계획표: 종이에 그리는 주간 계획표처럼 왼쪽에 과목, 위에 요일, 칸 안에 그날 할 학습 내용을 적습니다.
  * 학습 내용을 누르면 체크됩니다. 칸이 넓어야 해서 좁은 화면에서는 옆으로 밀어서 보고, 과목 열은 왼쪽에 붙어 있습니다.
+ * (요일과 과목 위치를 바꾼 것은 DayPlanTable)
  */
 export default function PlanTable({ subjects, tasksOf, dates, todayStr, isDone, onToggle, dayTotals }: BoardTableProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -58,9 +58,7 @@ export default function PlanTable({ subjects, tasksOf, dates, todayStr, isDone, 
                   </th>
                   {dates.map((date) => {
                     const isToday = date === todayStr
-                    const weekday = weekdayOf(date)
-                    // 그날 계획한 학습 내용과, 계획에 없어도 그날 체크한 것
-                    const items = tasks.filter((task) => task.weekdays.includes(weekday) || isDone(task.id, date))
+                    const items = dayItems(tasks, date, isDone)
                     return (
                       <td key={date} className={isToday ? 'plan-cell is-today' : 'plan-cell'}>
                         {items.length > 0 && (
@@ -88,34 +86,5 @@ export default function PlanTable({ subjects, tasksOf, dates, todayStr, isDone, 
       </div>
       {overflowing && <p className="muted plan-hint">옆으로 밀어서 다른 요일을 볼 수 있습니다.</p>}
     </div>
-  )
-}
-
-/** 칸 안의 학습 내용 하나: 작은 체크 네모와 이름. 누르면 체크하거나 취소합니다. */
-function PlanItem({ task, date, state, isToday, onToggle }: {
-  task: Task
-  date: DateStr
-  state: CellState
-  isToday: boolean
-  onToggle(): void
-}) {
-  const className = ['plan-item', state.planned && 'is-planned', state.done && 'is-done', state.missed && 'is-missed']
-    .filter(Boolean)
-    .join(' ')
-  const status = state.done ? '완료' : state.planned ? '미완료' : '계획 없음'
-  const label = `${task.name} ${formatDate(date)}${isToday ? ' 오늘' : ''} ${status}`
-
-  return (
-    <button type="button" className={className} aria-pressed={state.done} aria-label={label} onClick={onToggle}>
-      <span className="check-box">
-        {state.done && (
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3.5"
-            strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M5 12.5l4.5 4.5L19 7" />
-          </svg>
-        )}
-      </span>
-      <span className="plan-item-name">{task.name}</span>
-    </button>
   )
 }

@@ -9,6 +9,7 @@ import { addDays, today, type DateStr } from '../utils/date'
 import { formatWeekRange, startOfWeek, weekDates } from '../utils/week'
 import type { BoardView } from './boardTypes'
 import CheckTable from './CheckTable'
+import DayPlanTable from './DayPlanTable'
 import { BackIcon, ChevronRightIcon, PlusIcon } from './icons'
 import PlanTable from './PlanTable'
 
@@ -17,7 +18,7 @@ interface WeekBoardProps {
   /** 보여줄 주의 월요일 */
   weekStart: DateStr
   onChangeWeek(weekStart: DateStr): void
-  /** 체크표(기본) 또는 계획표 */
+  /** 계획표(기본), 요일별, 체크표 */
   view: BoardView
 }
 
@@ -90,6 +91,8 @@ export default function WeekBoard({ child, weekStart, onChangeWeek, view }: Week
         </div>
       ) : view === 'plan' ? (
         <PlanTable {...tableProps} />
+      ) : view === 'days' ? (
+        <DayPlanTable {...tableProps} />
       ) : (
         <CheckTable {...tableProps} />
       )}
@@ -102,7 +105,7 @@ export default function WeekBoard({ child, weekStart, onChangeWeek, view }: Week
       </Link>
       {subjects.length > 0 && (
         <p className="muted board-hint">
-          {view === 'plan'
+          {view !== 'check'
             ? '칸 안의 학습 내용을 누르면 체크됩니다. 과목 이름을 누르면 학습 내용과 계획 요일을 고칠 수 있습니다.'
             : '과목 이름을 누르면 학습 내용과 계획 요일을 고칠 수 있습니다.'}
         </p>

@@ -2,8 +2,13 @@ import type { Subject, Task } from '../data/types'
 import type { Progress } from '../data/weekStats'
 import type { DateStr } from '../utils/date'
 
-/** 보기 방식. check = 체크표(학습 내용 줄마다 7칸), plan = 계획표(과목 줄, 칸 안에 그날 학습 내용) */
-export type BoardView = 'check' | 'plan'
+/**
+ * 보기 방식
+ * - plan = 계획표: 왼쪽 과목, 위 요일, 칸 안에 그날 학습 내용
+ * - days = 요일별: 계획표의 요일과 과목 위치를 바꾼 것. 왼쪽 요일, 위 과목
+ * - check = 체크표: 학습 내용 줄마다 월~일 체크 칸 7개
+ */
+export type BoardView = 'plan' | 'days' | 'check'
 
 /** 체크표와 계획표가 함께 받는 값 */
 export interface BoardTableProps {
